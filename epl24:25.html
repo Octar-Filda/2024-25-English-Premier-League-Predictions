@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>EPL 2024/25 Prediction Game (Mobile)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 10px;
+            font-size: 16px;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        #team-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .team-item {
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            margin-bottom: 5px;
+            padding: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .team-name {
+            font-size: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            flex: 1;
+            margin-right: 10px;
+        }
+        .team-emoji {
+            font-size: 28px;
+            margin-right: 10px;
+        }
+        .team-buttons {
+            display: flex;
+            align-items: center;
+        }
+        .team-button {
+            border: none;
+            color: white;
+            padding: 6px 8px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 1px;
+            cursor: pointer;
+        }
+        .up-down-buttons {
+            display: flex;
+            flex-direction: column;
+        }
+        .up-button { background-color: #98FF98; } /* Mint */
+        .down-button { background-color: #301934; } /* Dark Purple */
+        .top-button { background-color: #4CAF50; } /* Green */
+        .bottom-button { background-color: #f44336; } /* Red */
+        .prediction-input {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button[type="submit"] {
+            display: block;
+            width: 100%;
+            margin: 20px 0;
+            padding: 15px;
+            font-size: 18px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #results {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>EPL 2024/25 Prediction Game</h1>
+    <form id="prediction-form">
+        <h2>Your Information</h2>
+        <label for="name">Your Name:</label>
+        <input type="text" id="name" name="name" class="prediction-input" required>
+        
+        <h2>Rank the teams:</h2>
+        <p>Use the buttons to reorder the teams.</p>
+        <ol id="team-list"></ol>
+        
+        <h2>Additional Predictions:</h2>
+        <label for="top-scorer">Predict the top goal scorer:</label>
+        <input type="text" id="top-scorer" name="top_scorer" class="prediction-input" required>
+        <label for="son-goals">How many goals will Son Heung Min score this season?</label>
+        <input type="number" id="son-goals" name="son_goals" class="prediction-input" required min="0">
+        <label for="hwang-goals">How many goals will Hwang Hee Chan score this season?</label>
+        <input type="number" id="hwang-goals" name="hwang_goals" class="prediction-input" required min="0">
+        <button type="submit">Submit Predictions</button>
+    </form>
+    <div id="results"></div>
+
+    <script>
+        const teams = [
+            { name: "Arsenal", emoji: "🔴" },
+            { name: "Aston Villa", emoji: "🦁" },
+            { name: "Bournemouth", emoji: "🍒" },
+            { name: "Brentford", emoji: "🐝" },
+            { name: "Brighton", emoji: "🐦" },
+            { name: "Chelsea", emoji: "🔵" },
+            { name: "Crystal Palace", emoji: "🦅" },
+            { name: "Everton", emoji: "🔵" },
+            { name: "Fulham", emoji: "⚪" },
+            { name: "Ipswich Town", emoji: "🚜" },
+            { name: "Leicester City", emoji: "🦊" },
+            { name: "Liverpool", emoji: "🔴" },
+            { name: "Manchester City", emoji: "🔵" },
+            { name: "Manchester United", emoji: "😈" },
+            { name: "Newcastle United", emoji: "🐦⬛⬜" },
+            { name: "Nottingham Forest", emoji: "🌳" },
+            { name: "Southampton", emoji: "😇" },
+            { name: "Tottenham Hotspur", emoji: "🐓" },
+            { name: "West Ham United", emoji: "⚒️" },
+            { name: "Wolverhampton Wanderers", emoji: "🐺" }
+        ];
+
+        // Sort teams alphabetically
+        teams.sort((a, b) => a.name.localeCompare(b.name));
+
+        const teamList = document.getElementById('team-list');
+
+        function renderTeamList() {
+            teamList.innerHTML = '';
+            teams.forEach((team, index) => {
+                const li = document.createElement('li');
+                li.className = 'team-item';
+                li.innerHTML = `
+                    <span class="team-name"><span class="team-emoji">${team.emoji}</span>${team.name}</span>
+                    <div class="team-buttons">
+                        <button type="button" class="team-button top-button" onclick="moveTeamTo(${index}, 0)">T</button>
+                        <button type="button" class="team-button bottom-button" onclick="moveTeamTo(${index}, ${teams.length - 1})">B</button>
+                        <div class="up-down-buttons">
+                            <button type="button" class="team-button up-button" onclick="moveTeam(${index}, -1)">▲</button>
+                            <button type="button" class="team-button down-button" onclick="moveTeam(${index}, 1)">▼</button>
+                        </div>
+                    </div>
+                `;
+                teamList.appendChild(li);
+            });
+        }
+
+        renderTeamList();
+
+        function moveTeam(index, direction) {
+            if (direction === -1 && index > 0) {
+                [teams[index], teams[index - 1]] = [teams[index - 1], teams[index]];
+            } else if (direction === 1 && index < teams.length - 1) {
+                [teams[index], teams[index + 1]] = [teams[index + 1], teams[index]];
+            }
+            renderTeamList();
+        }
+
+        function moveTeamTo(fromIndex, toIndex) {
+            const team = teams.splice(fromIndex, 1)[0];
+            teams.splice(toIndex, 0, team);
+            renderTeamList();
+        }
+
+        document.getElementById('prediction-form').addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent form from submitting
+            const predictions = teams.map((team, index) => ({
+                team: `${team.emoji} ${team.name}`,
+                position: index + 1
+            }));
+            
+            // Display results
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<h2>Your Predictions:</h2>';
+            resultsDiv.innerHTML += `<p><strong>Name:</strong> ${document.getElementById('name').value}</p>`;
+            resultsDiv.innerHTML += '<h3>Final Standings:</h3>';
+            resultsDiv.innerHTML += '<ol>' + predictions.map(p => `<li>${p.team}</li>`).join('') + '</ol>';
+            resultsDiv.innerHTML += `<h3>Additional Predictions:</h3>`;
+            resultsDiv.innerHTML += `<p>Top Goal Scorer: ${document.getElementById('top-scorer').value}</p>`;
+            resultsDiv.innerHTML += `<p>Son Heung Min's goals: ${document.getElementById('son-goals').value}</p>`;
+            resultsDiv.innerHTML += `<p>Hwang Hee Chan's goals: ${document.getElementById('hwang-goals').value}</p>`;
+            
+            resultsDiv.innerHTML += '<h3>캡쳐해서 이필립한테 보내시오</h3>';
+        });
+    </script>
+</body>
+</html>
