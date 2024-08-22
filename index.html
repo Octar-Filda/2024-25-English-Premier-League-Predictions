@@ -2,17 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <title>EPL 2024/25 Prediction Game (Mobile)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EPL 2024/25 Prediction Game</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
-            padding: 10px;
-            font-size: 16px;
+            padding: 20px;
         }
-        h1, h2 {
+        h1, h2, h3 {
             text-align: center;
         }
         #team-list {
@@ -23,70 +22,69 @@
             background-color: #f0f0f0;
             border: 1px solid #ddd;
             margin-bottom: 5px;
-            padding: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 10px;
+            cursor: move;
         }
-        .team-name {
-            font-size: 20px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            flex: 1;
-            margin-right: 10px;
+        .team-item:hover {
+            background-color: #e0e0e0;
         }
-        .team-emoji {
-            font-size: 28px;
-            margin-right: 10px;
+        .dragging {
+            opacity: 0.5;
         }
-        .team-buttons {
-            display: flex;
-            align-items: center;
-        }
-        .team-button {
-            border: none;
-            color: white;
-            padding: 6px 8px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 14px;
-            margin: 1px;
-            cursor: pointer;
-        }
-        .up-down-buttons {
-            display: flex;
-            flex-direction: column;
-        }
-        .up-button { background-color: #98FF98; } /* Mint */
-        .down-button { background-color: #301934; } /* Dark Purple */
-        .top-button { background-color: #4CAF50; } /* Green */
-        .bottom-button { background-color: #f44336; } /* Red */
         .prediction-input {
             display: block;
             width: 100%;
             margin: 10px 0;
-            padding: 10px;
-            font-size: 16px;
-            box-sizing: border-box;
+            padding: 5px;
         }
-        button[type="submit"] {
+        .goal-challenge {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+        }
+        .goal-challenge input {
+            width: 18%;
+            padding: 5px;
+        }
+        button {
             display: block;
-            width: 100%;
-            margin: 20px 0;
-            padding: 15px;
-            font-size: 18px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 16px;
         }
         #results {
             margin-top: 20px;
             border: 1px solid #ddd;
             padding: 20px;
             background-color: #f9f9f9;
+        }
+        .formation {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+            background-color: #90EE90;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .formation-row {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-around;
+        }
+        .formation-input {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 120px;
+        }
+        .formation-input input {
+            width: 100%;
+            padding: 5px;
+            margin-bottom: 5px;
+        }
+        .captain-select {
+            margin-top: 5px;
         }
     </style>
 </head>
@@ -98,90 +96,168 @@
         <input type="text" id="name" name="name" class="prediction-input" required>
         
         <h2>Rank the teams:</h2>
-        <p>Use the buttons to reorder the teams.</p>
+        <p>Drag to predict the final standings:</p>
         <ol id="team-list"></ol>
         
         <h2>Additional Predictions:</h2>
-        <label for="top-scorer">득점 2위:</label>
-        <input type="text" id="top-scorer" name="top_scorer" class="prediction-input" required>
         <label for="son-goals">How many goals will Son Heung Min score this season?</label>
         <input type="number" id="son-goals" name="son_goals" class="prediction-input" required min="0">
+        
         <label for="hwang-goals">How many goals will Hwang Hee Chan score this season?</label>
         <input type="number" id="hwang-goals" name="hwang_goals" class="prediction-input" required min="0">
+        
+        <label>25골 챌린지 : 각각 다른팀에서 총 5명을 선발하여 득점 합계가 25가 되거나 가장 가깝게 맞추기.</label>
+        <div class="goal-challenge">
+            <input type="text" name="goal_challenge1" required>
+            <input type="text" name="goal_challenge2" required>
+            <input type="text" name="goal_challenge3" required>
+            <input type="text" name="goal_challenge4" required>
+            <input type="text" name="goal_challenge5" required>
+        </div>
+        
+        <h3>시즌 평점 Best XI (팀 중복 불가)</h3>
+        <p>Select one player as captain by checking the box next to their name.</p>
+        <div class="formation">
+            <div class="formation-row">
+                <div class="formation-input">
+                    <input type="text" name="left_wing" placeholder="Left Wing">
+                    <input type="text" name="left_wing_team" placeholder="Team">
+                    <input type="checkbox" name="captain" value="left_wing" class="captain-select">
+                </div>
+                <div class="formation-input">
+                    <input type="text" name="striker" placeholder="Striker">
+                    <input type="text" name="striker_team" placeholder="Team">
+                    <input type="checkbox" name="captain" value="striker" class="captain-select">
+                </div>
+                <div class="formation-input">
+                    <input type="text" name="right_wing" placeholder="Right Wing">
+                    <input type="text" name="right_wing_team" placeholder="Team">
+                    <input type="checkbox" name="captain" value="right_wing" class="captain-select">
+                </div>
+            </div>
+            <div class="formation-row">
+                <div class="formation-input">
+                    <input type="text" name="left_mid" placeholder="Left Midfielder">
+                    <input type="text" name="left_mid_team" placeholder="Team">
+                    <input type="checkbox" name="captain" value="left_mid" class="captain-select">
+                </div>
+                <div class="formation-input">
+                    <input type="text" name="center_mid" placeholder="Center Midfielder">
+                    <input type="text" name="center_mid_team" placeholder="Team">
+                    <input type="checkbox" name="captain" value="center_mid" class="captain-select">
+                </div>
+                <div class="formation-input">
+                    <input type="text" name="right_mid" placeholder="Right Midfielder">
+                    <input type="text" name="right_mid_team" placeholder="Team">
+                    <input type="checkbox" name="captain" value="right_mid" class="captain-select">
+                </div>
+            </div>
+            <div class="formation-row">
+                <div class="formation-input">
+                    <input type="text" name="left_back" placeholder="Left Back">
+                    <input type="text" name="left_back_team" placeholder="Team">
+                    <input type="checkbox" name="captain" value="left_back" class="captain-select">
+                </div>
+                <div class="formation-input">
+                    <input type="text" name="center_back1" placeholder="Center Back">
+                    <input type="text" name="center_back1_team" placeholder="Team">
+                    <input type="checkbox" name="captain" value="center_back1" class="captain-select">
+                </div>
+                <div class="formation-input">
+                    <input type="text" name="center_back2" placeholder="Center Back">
+                    <input type="text" name="center_back2_team" placeholder="Team">
+                    <input type="checkbox" name="captain" value="center_back2" class="captain-select">
+                </div>
+                <div class="formation-input">
+                    <input type="text" name="right_back" placeholder="Right Back">
+                    <input type="text" name="right_back_team" placeholder="Team">
+                    <input type="checkbox" name="captain" value="right_back" class="captain-select">
+                </div>
+            </div>
+            <div class="formation-row">
+                <div class="formation-input">
+                    <input type="text" name="goalkeeper" placeholder="Goalkeeper">
+                    <input type="text" name="goalkeeper_team" placeholder="Team">
+                    <input type="checkbox" name="captain" value="goalkeeper" class="captain-select">
+                </div>
+            </div>
+        </div>
+        
         <button type="submit">Submit Predictions</button>
     </form>
     <div id="results"></div>
 
     <script>
         const teams = [
-            { name: "Arsenal", emoji: "🔴" },
-            { name: "Aston Villa", emoji: "🦁" },
-            { name: "Bournemouth", emoji: "🍒" },
-            { name: "Brentford", emoji: "🐝" },
-            { name: "Brighton", emoji: "🐦" },
-            { name: "Chelsea", emoji: "🔵" },
-            { name: "Crystal Palace", emoji: "🦅" },
-            { name: "Everton", emoji: "🔵" },
-            { name: "Fulham", emoji: "⚪" },
-            { name: "Ipswich Town", emoji: "🚜" },
-            { name: "Leicester City", emoji: "🦊" },
-            { name: "Liverpool", emoji: "🔴" },
-            { name: "Manchester City", emoji: "🔵" },
-            { name: "Manchester United", emoji: "😈" },
-            { name: "Newcastle United", emoji: "🐦⬛⬜" },
-            { name: "Nottingham Forest", emoji: "🌳" },
-            { name: "Southampton", emoji: "😇" },
-            { name: "Tottenham Hotspur", emoji: "🐓" },
-            { name: "West Ham United", emoji: "⚒️" },
-            { name: "Wolverhampton Wanderers", emoji: "🐺" }
+            "Arsenal", "Aston Villa", "Bournemouth", "Brentford", "Brighton", 
+            "Chelsea", "Crystal Palace", "Everton", "Fulham", 
+            "Ipswich Town", "Leicester City", "Liverpool", "Manchester City", "Manchester United", 
+            "Newcastle United", "Nottingham Forest", "Southampton", "Tottenham Hotspur", 
+            "West Ham United", "Wolverhampton Wanderers"
         ];
 
         // Sort teams alphabetically
-        teams.sort((a, b) => a.name.localeCompare(b.name));
+        teams.sort();
 
         const teamList = document.getElementById('team-list');
 
-        function renderTeamList() {
-            teamList.innerHTML = '';
-            teams.forEach((team, index) => {
-                const li = document.createElement('li');
-                li.className = 'team-item';
-                li.innerHTML = `
-                    <span class="team-name"><span class="team-emoji">${team.emoji}</span>${team.name}</span>
-                    <div class="team-buttons">
-                        <button type="button" class="team-button top-button" onclick="moveTeamTo(${index}, 0)">T</button>
-                        <button type="button" class="team-button bottom-button" onclick="moveTeamTo(${index}, ${teams.length - 1})">B</button>
-                        <div class="up-down-buttons">
-                            <button type="button" class="team-button up-button" onclick="moveTeam(${index}, -1)">▲</button>
-                            <button type="button" class="team-button down-button" onclick="moveTeam(${index}, 1)">▼</button>
-                        </div>
-                    </div>
-                `;
-                teamList.appendChild(li);
-            });
-        }
+        teams.forEach((team) => {
+            const li = document.createElement('li');
+            li.className = 'team-item';
+            li.draggable = true;
+            li.textContent = team;
+            teamList.appendChild(li);
+        });
 
-        renderTeamList();
+        teamList.addEventListener('dragstart', (e) => {
+            e.target.classList.add('dragging');
+        });
 
-        function moveTeam(index, direction) {
-            if (direction === -1 && index > 0) {
-                [teams[index], teams[index - 1]] = [teams[index - 1], teams[index]];
-            } else if (direction === 1 && index < teams.length - 1) {
-                [teams[index], teams[index + 1]] = [teams[index + 1], teams[index]];
+        teamList.addEventListener('dragend', (e) => {
+            e.target.classList.remove('dragging');
+        });
+
+        teamList.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const afterElement = getDragAfterElement(teamList, e.clientY);
+            const draggable = document.querySelector('.dragging');
+            if (afterElement == null) {
+                teamList.appendChild(draggable);
+            } else {
+                teamList.insertBefore(draggable, afterElement);
             }
-            renderTeamList();
+        });
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.team-item:not(.dragging)')];
+
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
         }
 
-        function moveTeamTo(fromIndex, toIndex) {
-            const team = teams.splice(fromIndex, 1)[0];
-            teams.splice(toIndex, 0, team);
-            renderTeamList();
-        }
+        // Ensure only one captain is selected
+        const captainSelects = document.querySelectorAll('.captain-select');
+        captainSelects.forEach(select => {
+            select.addEventListener('change', function() {
+                if (this.checked) {
+                    captainSelects.forEach(otherSelect => {
+                        if (otherSelect !== this) otherSelect.checked = false;
+                    });
+                }
+            });
+        });
 
         document.getElementById('prediction-form').addEventListener('submit', function(e) {
             e.preventDefault(); // Prevent form from submitting
-            const predictions = teams.map((team, index) => ({
-                team: `${team.emoji} ${team.name}`,
+            const predictions = Array.from(document.querySelectorAll('.team-item')).map((item, index) => ({
+                team: item.textContent,
                 position: index + 1
             }));
             
@@ -192,11 +268,27 @@
             resultsDiv.innerHTML += '<h3>Final Standings:</h3>';
             resultsDiv.innerHTML += '<ol>' + predictions.map(p => `<li>${p.team}</li>`).join('') + '</ol>';
             resultsDiv.innerHTML += `<h3>Additional Predictions:</h3>`;
-            resultsDiv.innerHTML += `<p>득점 2위: ${document.getElementById('득점 2위').value}</p>`;
             resultsDiv.innerHTML += `<p>Son Heung Min's goals: ${document.getElementById('son-goals').value}</p>`;
             resultsDiv.innerHTML += `<p>Hwang Hee Chan's goals: ${document.getElementById('hwang-goals').value}</p>`;
             
-            resultsDiv.innerHTML += '<h3>캡쳐해서 이필립한테 보내시오</h3>';
+            resultsDiv.innerHTML += '<p>25골 챌린지: ';
+            for (let i = 1; i <= 5; i++) {
+                resultsDiv.innerHTML += document.getElementsByName(`goal_challenge${i}`)[0].value;
+                if (i < 5) resultsDiv.innerHTML += ', ';
+            }
+            resultsDiv.innerHTML += '</p>';
+            
+            resultsDiv.innerHTML += '<h3>시즌 평점 Best XI:</h3>';
+            const formationInputs = document.querySelectorAll('.formation-input');
+            const bestXI = Array.from(formationInputs).map(input => {
+                const player = input.querySelector('input:first-of-type').value;
+                const team = input.querySelector('input:nth-of-type(2)').value;
+                const isCaptain = input.querySelector('.captain-select').checked;
+                return `${player} (${team})${isCaptain ? ' (C)' : ''}`;
+            });
+            resultsDiv.innerHTML += '<ul>' + bestXI.map(player => `<li>${player}</li>`).join('') + '</ul>';
+            
+            resultsDiv.innerHTML += '<h3>위 답안을 캡쳐해서 이필립한테 보내시오</h3>';
         });
     </script>
 </body>
